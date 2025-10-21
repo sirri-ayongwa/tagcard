@@ -1,8 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LogOut, Trash2, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, LogOut, Trash2, Download, HelpCircle, ExternalLink, Coffee } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,10 +19,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const Settings = () => {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpSubject, setHelpSubject] = useState("");
+  const [helpMessage, setHelpMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -31,6 +49,35 @@ const Settings = () => {
 
   const handleExportData = () => {
     toast.info("Data export coming soon!");
+  };
+
+  const handleSendHelp = async () => {
+    if (!helpSubject.trim() || !helpMessage.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    setSending(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-help-request', {
+        body: {
+          userEmail: user?.email,
+          subject: helpSubject,
+          message: helpMessage,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("Help request sent! We'll get back to you soon.");
+      setHelpOpen(false);
+      setHelpSubject("");
+      setHelpMessage("");
+    } catch (error: any) {
+      toast.error("Failed to send help request");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -97,10 +144,80 @@ const Settings = () => {
         <div className="space-y-4">
           <h2 className="font-bold text-lg">Support</h2>
           
-          <button className="w-full p-4 border rounded-xl text-left hover:bg-muted transition-colors">
-            <p className="font-medium">Help Center</p>
-            <p className="text-sm text-muted-foreground">Get help and support</p>
-          </button>
+          <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
+            <DialogTrigger asChild>
+              <button className="w-full p-4 border rounded-xl text-left hover:bg-muted transition-colors flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Help Center</p>
+                  <p className="text-sm text-muted-foreground">Get help and support</p>
+                </div>
+                <HelpCircle size={20} />
+              </button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Contact Support</DialogTitle>
+                <DialogDescription>
+                  Send us a message and we'll get back to you as soon as possible.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="subject">Subject</Label>
+                  <Input
+                    id="subject"
+                    value={helpSubject}
+                    onChange={(e) => setHelpSubject(e.target.value)}
+                    placeholder="What do you need help with?"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message</Label>
+                  <Textarea
+                    id="message"
+                    value={helpMessage}
+                    onChange={(e) => setHelpMessage(e.target.value)}
+                    placeholder="Describe your issue or question..."
+                    rows={5}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setHelpOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSendHelp} disabled={sending} className="btn-primary">
+                  {sending ? "Sending..." : "Send"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <a
+            href="https://tagcard.canny.io/feature-requests"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full p-4 border rounded-xl text-left hover:bg-muted transition-colors flex items-center justify-between block"
+          >
+            <div>
+              <p className="font-medium">Improve TagCard</p>
+              <p className="text-sm text-muted-foreground">Request features & vote on ideas</p>
+            </div>
+            <ExternalLink size={20} />
+          </a>
+
+          <a
+            href="https://ko-fi.com/sirri"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full p-4 border rounded-xl text-left hover:bg-muted transition-colors flex items-center justify-between block"
+          >
+            <div>
+              <p className="font-medium">Support App Developer</p>
+              <p className="text-sm text-muted-foreground">Love TagCard? Buy me a coffee ☕</p>
+            </div>
+            <Coffee size={20} />
+          </a>
 
           <button className="w-full p-4 border rounded-xl text-left hover:bg-muted transition-colors">
             <p className="font-medium">About TagCard</p>

@@ -33,8 +33,10 @@ const EditProfile = () => {
   const [showSocialLinks, setShowSocialLinks] = useState(true);
 
   // Tags
-  const [tags, setTags] = useState<Array<{ id: string; name: string }>>([]);
-  const [newTag, setNewTag] = useState("");
+  const [likes, setLikes] = useState<Array<{ id: string; name: string }>>([]);
+  const [dislikes, setDislikes] = useState<Array<{ id: string; name: string }>>([]);
+  const [newLike, setNewLike] = useState("");
+  const [newDislike, setNewDislike] = useState("");
 
   // Social links
   const [socialLinks, setSocialLinks] = useState<Array<{ id: string; platform: string; url: string }>>([]);
@@ -79,7 +81,10 @@ const EditProfile = () => {
         .select('*')
         .eq('profile_id', user.id);
       
-      setTags(tagsData || []);
+      const likesData = tagsData?.filter(t => t.tag_type === 'like') || [];
+      const dislikesData = tagsData?.filter(t => t.tag_type === 'dislike') || [];
+      setLikes(likesData);
+      setDislikes(dislikesData);
 
       const { data: socialData } = await supabase
         .from('social_links')
@@ -125,32 +130,61 @@ const EditProfile = () => {
     }
   };
 
-  const addTag = async () => {
-    if (!newTag.trim() || !user) return;
+  const addLike = async () => {
+    if (!newLike.trim() || !user) return;
 
     try {
       const { data, error } = await supabase
         .from('tags')
-        .insert({ profile_id: user.id, name: newTag.trim() })
+        .insert({ profile_id: user.id, name: newLike.trim(), tag_type: 'like' })
         .select()
         .single();
 
       if (error) throw error;
-      setTags([...tags, data]);
-      setNewTag("");
-      toast.success("Tag added!");
+      setLikes([...likes, data]);
+      setNewLike("");
+      toast.success("Like added!");
     } catch (error) {
-      toast.error("Failed to add tag");
+      toast.error("Failed to add like");
     }
   };
 
-  const removeTag = async (tagId: string) => {
+  const addDislike = async () => {
+    if (!newDislike.trim() || !user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('tags')
+        .insert({ profile_id: user.id, name: newDislike.trim(), tag_type: 'dislike' })
+        .select()
+        .single();
+
+      if (error) throw error;
+      setDislikes([...dislikes, data]);
+      setNewDislike("");
+      toast.success("Dislike added!");
+    } catch (error) {
+      toast.error("Failed to add dislike");
+    }
+  };
+
+  const removeLike = async (tagId: string) => {
     try {
       await supabase.from('tags').delete().eq('id', tagId);
-      setTags(tags.filter(t => t.id !== tagId));
-      toast.success("Tag removed!");
+      setLikes(likes.filter(t => t.id !== tagId));
+      toast.success("Like removed!");
     } catch (error) {
-      toast.error("Failed to remove tag");
+      toast.error("Failed to remove like");
+    }
+  };
+
+  const removeDislike = async (tagId: string) => {
+    try {
+      await supabase.from('tags').delete().eq('id', tagId);
+      setDislikes(dislikes.filter(t => t.id !== tagId));
+      toast.success("Dislike removed!");
+    } catch (error) {
+      toast.error("Failed to remove dislike");
     }
   };
 
@@ -353,29 +387,64 @@ const EditProfile = () => {
           </div>
         </div>
 
-        {/* Tags */}
+        {/* Likes */}
         <div className="space-y-4">
-          <h2 className="font-bold text-lg">Likes & Dislikes</h2>
+          <h2 className="font-bold text-lg">Likes</h2>
+          <p className="text-sm text-muted-foreground">Add things you enjoy - hobbies, food, music, activities, etc.</p>
           
           <div className="flex gap-2">
             <Input
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              placeholder="Add a skill or tag"
-              onKeyPress={(e) => e.key === 'Enter' && addTag()}
+              value={newLike}
+              onChange={(e) => setNewLike(e.target.value)}
+              placeholder="e.g., Coffee, Hiking, Jazz..."
+              onKeyPress={(e) => e.key === 'Enter' && addLike()}
             />
-            <Button onClick={addTag} size="icon" disabled={!newTag.trim()}>
+            <Button onClick={addLike} size="icon" disabled={!newLike.trim()}>
               <Plus size={18} />
             </Button>
           </div>
 
-          {tags.length > 0 && (
+          {likes.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
+              {likes.map((tag) => (
                 <span key={tag.id} className="tag-pill">
                   {tag.name}
                   <button
-                    onClick={() => removeTag(tag.id)}
+                    onClick={() => removeLike(tag.id)}
+                    className="ml-2 hover:text-destructive"
+                  >
+                    <X size={14} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Dislikes */}
+        <div className="space-y-4">
+          <h2 className="font-bold text-lg">Dislikes</h2>
+          <p className="text-sm text-muted-foreground">Add things you're not a fan of</p>
+          
+          <div className="flex gap-2">
+            <Input
+              value={newDislike}
+              onChange={(e) => setNewDislike(e.target.value)}
+              placeholder="e.g., Spicy food, Crowds..."
+              onKeyPress={(e) => e.key === 'Enter' && addDislike()}
+            />
+            <Button onClick={addDislike} size="icon" disabled={!newDislike.trim()}>
+              <Plus size={18} />
+            </Button>
+          </div>
+
+          {dislikes.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {dislikes.map((tag) => (
+                <span key={tag.id} className="tag-pill bg-foreground/5">
+                  {tag.name}
+                  <button
+                    onClick={() => removeDislike(tag.id)}
                     className="ml-2 hover:text-destructive"
                   >
                     <X size={14} />

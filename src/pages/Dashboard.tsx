@@ -7,6 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Share2, Download, Edit, Settings, Eye } from "lucide-react";
 import { toast } from "sonner";
 import QRModal from "@/components/QRModal";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { QRCodeSVG } from "qrcode.react";
 
 interface Profile {
   id: string;
@@ -14,9 +17,13 @@ interface Profile {
   display_name: string | null;
   avatar_url: string | null;
   job_title: string | null;
+  company: string | null;
   short_bio: string | null;
   public_id: string;
   profile_views: number;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
 }
 
 interface Tag {
@@ -25,7 +32,7 @@ interface Tag {
 }
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -72,13 +79,42 @@ const Dashboard = () => {
     setShowQRModal(true);
   };
 
-  const handleDownloadCard = () => {
-    toast.info("Business card export coming soon!");
+  const handleDownloadCard = async (format: 'pdf' | 'png') => {
+    const cardElement = document.getElementById('business-card-preview');
+    if (!cardElement) return;
+
+    try {
+      const canvas = await html2canvas(cardElement, {
+        scale: 3,
+        backgroundColor: '#ffffff',
+      });
+
+      if (format === 'png') {
+        const url = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${profile?.full_name.replace(/\s/g, '_')}_card.png`;
+        link.click();
+        toast.success("Business card downloaded as PNG!");
+      } else {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+          format: [85, 55],
+        });
+        pdf.addImage(imgData, 'PNG', 0, 0, 85, 55);
+        pdf.save(`${profile?.full_name.replace(/\s/g, '_')}_card.pdf`);
+        toast.success("Business card downloaded as PDF!");
+      }
+    } catch (error) {
+      toast.error("Failed to generate business card");
+    }
   };
 
   const handleViewProfile = () => {
     if (profile) {
-      window.open(`/profile/${profile.public_id}`, '_blank');
+      window.open(`/p/${profile.public_id}`, '_blank');
     }
   };
 
@@ -94,6 +130,7 @@ const Dashboard = () => {
 
   const displayName = profile.display_name || profile.full_name;
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  const profileUrl = `${window.location.origin}/p/${profile.public_id}`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,6 +144,34 @@ const Dashboard = () => {
           >
             <Settings size={20} />
           </button>
+        </div>
+      </div>
+
+      {/* Hidden Business Card Preview */}
+      <div id="business-card-preview" className="absolute -left-[9999px] w-[850px] h-[550px] bg-white p-8 flex flex-col justify-between">
+        <div className="flex items-start gap-6">
+          <div className="w-24 h-24 rounded-full bg-foreground flex items-center justify-center text-background text-2xl font-bold flex-shrink-0">
+            {initials}
+          </div>
+          <div className="flex-1">
+            <h2 className="text-3xl font-bold text-foreground mb-2">{displayName}</h2>
+            {profile?.job_title && (
+              <p className="text-xl text-foreground/70">
+                {profile.job_title}
+                {profile?.company && ` at ${profile.company}`}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex justify-between items-end">
+          <div className="space-y-1">
+            {profile?.email && <p className="text-foreground/70">{profile.email}</p>}
+            {profile?.phone && <p className="text-foreground/70">{profile.phone}</p>}
+            {profile?.website && <p className="text-foreground/70">{profile.website}</p>}
+          </div>
+          <div className="w-32 h-32 bg-white p-2">
+            <QRCodeSVG value={profileUrl} size={112} level="H" />
+          </div>
         </div>
       </div>
 
@@ -124,30 +189,44 @@ const Dashboard = () => {
               {profile.job_title && (
                 <p className="text-muted-foreground">{profile.job_title}</p>
               )}
+              {profile.short_bio && (
+                <p className="text-sm text-foreground/70 mt-2">{profile.short_bio}</p>
+              )}
             </div>
           </div>
 
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
+              {tags.slice(0, 8).map((tag) => (
                 <span key={tag.id} className="tag-pill text-sm">
                   {tag.name}
                 </span>
               ))}
+              {tags.length > 8 && (
+                <span className="tag-pill text-sm">+{tags.length - 8}</span>
+              )}
             </div>
           )}
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <Button onClick={handleShare} className="btn-primary">
+            <Button onClick={handleShare} className="w-full btn-primary" size="lg">
               <Share2 className="mr-2" size={18} />
-              Share
+              Share Profile
             </Button>
-            <Button onClick={handleDownloadCard} className="btn-secondary">
-              <Download className="mr-2" size={18} />
-              Download Card
-            </Button>
-            <Button onClick={() => navigate("/edit-profile")} className="btn-secondary">
+            
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={() => handleDownloadCard('pdf')} variant="outline" size="lg">
+                <Download className="mr-2" size={18} />
+                PDF Card
+              </Button>
+              <Button onClick={() => handleDownloadCard('png')} variant="outline" size="lg">
+                <Download className="mr-2" size={18} />
+                PNG Card
+              </Button>
+            </div>
+
+            <Button onClick={() => navigate("/edit-profile")} variant="outline" className="w-full" size="lg">
               <Edit className="mr-2" size={18} />
               Edit Profile
             </Button>
@@ -173,9 +252,9 @@ const Dashboard = () => {
       {/* QR Modal */}
       {showQRModal && profile && (
         <QRModal
-          isOpen={showQRModal}
-          onClose={() => setShowQRModal(false)}
-          publicId={profile.public_id}
+          open={showQRModal}
+          onOpenChange={setShowQRModal}
+          profileUrl={profileUrl}
         />
       )}
     </div>

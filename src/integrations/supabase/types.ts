@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      profile_views: {
+        Row: {
+          id: string
+          profile_id: string | null
+          referrer: string | null
+          user_agent: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          id?: string
+          profile_id?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          id?: string
+          profile_id?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_views_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           analytics_enabled: boolean | null
@@ -160,6 +192,7 @@ export type Database = {
           id: string
           name: string
           profile_id: string | null
+          tag_type: string | null
         }
         Insert: {
           category?: string | null
@@ -167,6 +200,7 @@ export type Database = {
           id?: string
           name: string
           profile_id?: string | null
+          tag_type?: string | null
         }
         Update: {
           category?: string | null
@@ -174,6 +208,7 @@ export type Database = {
           id?: string
           name?: string
           profile_id?: string | null
+          tag_type?: string | null
         }
         Relationships: [
           {

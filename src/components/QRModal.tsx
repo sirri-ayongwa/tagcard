@@ -1,50 +1,47 @@
-import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QRCodeSVG } from "qrcode.react";
 import { Copy, Download, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface QRModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  publicId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  profileUrl: string;
 }
 
-const QRModal = ({ isOpen, onClose, publicId }: QRModalProps) => {
-  const [qrType, setQrType] = useState<"dynamic" | "static">("dynamic");
-  const [preset, setPreset] = useState("public");
-  
-  const baseUrl = window.location.origin;
-  const profileUrl = `${baseUrl}/profile/${publicId}?preset=${preset}`;
-
+const QRModal = ({ open, onOpenChange, profileUrl }: QRModalProps) => {
   const handleCopyLink = () => {
     navigator.clipboard.writeText(profileUrl);
     toast.success("Link copied to clipboard!");
   };
 
   const handleDownloadQR = () => {
-    const canvas = document.getElementById("qr-code") as HTMLCanvasElement;
-    if (!canvas) return;
+    const qrElement = document.getElementById("qr-code");
+    if (!qrElement) return;
 
-    const svg = canvas.querySelector("svg");
+    const svg = qrElement.querySelector("svg");
     if (!svg) return;
 
     const svgData = new XMLSerializer().serializeToString(svg);
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(svgBlob);
-    
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `tagcard-qr-${preset}.svg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
 
-    toast.success("QR code downloaded!");
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      
+      const pngUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = pngUrl;
+      link.download = "tagcard-qr.png";
+      link.click();
+      toast.success("QR code downloaded!");
+    };
+
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
 
   const handleShare = async () => {
@@ -52,11 +49,11 @@ const QRModal = ({ isOpen, onClose, publicId }: QRModalProps) => {
       try {
         await navigator.share({
           title: "My TagCard Profile",
-          text: "Check out my profile!",
+          text: "Check out my profile on TagCard!",
           url: profileUrl,
         });
       } catch (error) {
-        console.log("Share cancelled");
+        console.log("Error sharing:", error);
       }
     } else {
       handleCopyLink();
@@ -64,75 +61,34 @@ const QRModal = ({ isOpen, onClose, publicId }: QRModalProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Your Profile</DialogTitle>
+          <DialogTitle>Share Your QR Code</DialogTitle>
         </DialogHeader>
 
-        <Tabs value={qrType} onValueChange={(v) => setQrType(v as "dynamic" | "static")}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="dynamic">Dynamic QR</TabsTrigger>
-            <TabsTrigger value="static">Static QR</TabsTrigger>
-          </TabsList>
+        <div className="space-y-4">
+          <div id="qr-code" className="flex justify-center p-6 bg-white rounded-xl">
+            <QRCodeSVG value={profileUrl} size={200} level="H" includeMargin />
+          </div>
 
-          <TabsContent value="dynamic" className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Visibility Preset</label>
-              <Select value={preset} onValueChange={setPreset}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="minimal">Minimal (Date)</SelectItem>
-                  <SelectItem value="friend">Friend</SelectItem>
-                  <SelectItem value="work">Work</SelectItem>
-                  <SelectItem value="public">Public</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <p className="text-xs text-muted-foreground text-center">
+            Scan this QR code to view your profile
+          </p>
 
-            <div id="qr-code" className="flex justify-center p-6 bg-white rounded-xl">
-              <QRCodeSVG
-                value={profileUrl}
-                size={200}
-                level="H"
-                includeMargin
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button onClick={handleCopyLink} variant="outline">
+              <Copy size={16} className="mr-2" />
+              Copy Link
+            </Button>
+            <Button onClick={handleDownloadQR} variant="outline">
+              <Download size={16} className="mr-2" />
+              Save QR
+            </Button>
+          </div>
 
-            <p className="text-xs text-muted-foreground text-center">
-              Dynamic QR codes link to your live profile. Updates automatically when you edit your profile.
-            </p>
-          </TabsContent>
-
-          <TabsContent value="static" className="space-y-4">
-            <div id="qr-code" className="flex justify-center p-6 bg-white rounded-xl">
-              <QRCodeSVG
-                value={profileUrl}
-                size={200}
-                level="H"
-                includeMargin
-              />
-            </div>
-
-            <p className="text-xs text-muted-foreground text-center">
-              Static QR codes embed your current profile data. Won't update when you edit your profile.
-            </p>
-          </TabsContent>
-        </Tabs>
-
-        <div className="space-y-2">
-          <Button onClick={handleCopyLink} className="btn-secondary">
-            <Copy className="mr-2" size={16} />
-            Copy Link
-          </Button>
-          <Button onClick={handleDownloadQR} className="btn-secondary">
-            <Download className="mr-2" size={16} />
-            Save QR Image
-          </Button>
-          <Button onClick={handleShare} className="btn-primary">
-            <Share2 className="mr-2" size={16} />
+          <Button onClick={handleShare} className="w-full btn-primary">
+            <Share2 size={16} className="mr-2" />
             Share
           </Button>
         </div>
