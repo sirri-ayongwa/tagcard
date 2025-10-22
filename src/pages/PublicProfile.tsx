@@ -92,16 +92,23 @@ const PublicProfile = () => {
     try {
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, profile_views')
         .eq('public_id', publicId)
         .single();
 
       if (profileData) {
+        // Insert view record
         await supabase.from('profile_views').insert({
           profile_id: profileData.id,
           referrer: document.referrer,
           user_agent: navigator.userAgent,
         });
+
+        // Increment profile view count
+        await supabase
+          .from('profiles')
+          .update({ profile_views: (profileData.profile_views || 0) + 1 })
+          .eq('id', profileData.id);
       }
     } catch (error) {
       console.error('Failed to track view:', error);
