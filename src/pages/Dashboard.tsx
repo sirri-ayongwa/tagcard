@@ -29,6 +29,7 @@ interface Profile {
 interface Tag {
   id: string;
   name: string;
+  tag_type: string;
 }
 
 const Dashboard = () => {
@@ -195,16 +196,37 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {tags.slice(0, 8).map((tag) => (
-                <span key={tag.id} className="tag-pill text-sm">
-                  {tag.name}
-                </span>
-              ))}
-              {tags.length > 8 && (
-                <span className="tag-pill text-sm">+{tags.length - 8}</span>
-              )}
+          {/* Likes */}
+          {tags.filter(t => t.tag_type === 'like').length > 0 && (
+            <div className="space-y-2">
+              <h3 className="font-semibold text-sm">Likes</h3>
+              <div className="flex flex-wrap gap-2">
+                {tags.filter(t => t.tag_type === 'like').slice(0, 8).map((tag) => (
+                  <span key={tag.id} className="tag-pill text-sm">
+                    {tag.name}
+                  </span>
+                ))}
+                {tags.filter(t => t.tag_type === 'like').length > 8 && (
+                  <span className="tag-pill text-sm">+{tags.filter(t => t.tag_type === 'like').length - 8}</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Dislikes */}
+          {tags.filter(t => t.tag_type === 'dislike').length > 0 && (
+            <div className="space-y-2">
+              <h3 className="font-semibold text-sm">Dislikes</h3>
+              <div className="flex flex-wrap gap-2">
+                {tags.filter(t => t.tag_type === 'dislike').slice(0, 8).map((tag) => (
+                  <span key={tag.id} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-black text-white">
+                    {tag.name}
+                  </span>
+                ))}
+                {tags.filter(t => t.tag_type === 'dislike').length > 8 && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-black text-white">+{tags.filter(t => t.tag_type === 'dislike').length - 8}</span>
+                )}
+              </div>
             </div>
           )}
 

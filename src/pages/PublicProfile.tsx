@@ -4,8 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Download, Search, MapPin, Briefcase, Globe, Mail, Phone } from "lucide-react";
+import { Download, Search, MapPin, Briefcase, Globe, Mail, Phone, Share2, MessageCircle, Twitter, Instagram, Facebook, Send } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Profile {
   full_name: string;
@@ -42,6 +48,7 @@ const PublicProfile = () => {
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -125,6 +132,31 @@ END:VCARD`;
     toast.success("Contact saved!");
   };
 
+  const handleShare = () => {
+    setShareDialogOpen(true);
+  };
+
+  const shareToSocial = (platform: string) => {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`Check out ${profile?.display_name || profile?.full_name}'s TagCard profile!`);
+    
+    const urls: Record<string, string> = {
+      whatsapp: `https://wa.me/?text=${text}%20${url}`,
+      snapchat: `https://www.snapchat.com/scan?attachmentUrl=${url}`,
+      twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+      instagram: `https://www.instagram.com/`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+    };
+
+    if (platform === 'instagram') {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied! Share it on Instagram.");
+    } else {
+      window.open(urls[platform], '_blank');
+    }
+    setShareDialogOpen(false);
+  };
+
   const filteredContent = () => {
     if (!searchQuery) return { tags, bio: profile?.long_bio || profile?.short_bio || '' };
 
@@ -187,10 +219,18 @@ END:VCARD`;
             </div>
           )}
 
-          <Button onClick={downloadVCard} className="btn-primary">
-            <Download size={18} className="mr-2" />
-            Save Contact
-          </Button>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={handleShare} variant="outline">
+              <Share2 size={16} className="mr-2" />
+              Share
+            </Button>
+            {profile.show_contact_info && (
+              <Button onClick={downloadVCard} className="btn-primary">
+                <Download size={16} className="mr-2" />
+                Save Contact
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -237,7 +277,7 @@ END:VCARD`;
             <h2 className="font-bold text-lg mb-3">Dislikes</h2>
             <div className="flex flex-wrap gap-2">
               {dislikes.map((tag) => (
-                <span key={tag.id} className="tag-pill bg-foreground/5">
+                <span key={tag.id} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-black text-white">
                   {tag.name}
                 </span>
               ))}
@@ -295,8 +335,62 @@ END:VCARD`;
 
       {/* Footer */}
       <div className="max-w-2xl mx-auto px-4 mt-12 text-center text-sm text-muted-foreground">
-        <p>Powered by TagCard</p>
+        Built with ❤ by{" "}
+        <a
+          href="https://ko-fi.com/sirri"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-foreground hover:underline"
+        >
+          Sirri
+        </a>
       </div>
+
+      {/* Social Share Dialog */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Share Profile</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-3 gap-4 py-4">
+            <button
+              onClick={() => shareToSocial('whatsapp')}
+              className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted transition-colors"
+            >
+              <MessageCircle className="h-8 w-8 text-green-600" />
+              <span className="text-xs">WhatsApp</span>
+            </button>
+            <button
+              onClick={() => shareToSocial('snapchat')}
+              className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted transition-colors"
+            >
+              <Send className="h-8 w-8 text-yellow-400" />
+              <span className="text-xs">Snapchat</span>
+            </button>
+            <button
+              onClick={() => shareToSocial('twitter')}
+              className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted transition-colors"
+            >
+              <Twitter className="h-8 w-8 text-blue-400" />
+              <span className="text-xs">Twitter</span>
+            </button>
+            <button
+              onClick={() => shareToSocial('instagram')}
+              className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted transition-colors"
+            >
+              <Instagram className="h-8 w-8 text-pink-600" />
+              <span className="text-xs">Instagram</span>
+            </button>
+            <button
+              onClick={() => shareToSocial('facebook')}
+              className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted transition-colors"
+            >
+              <Facebook className="h-8 w-8 text-blue-600" />
+              <span className="text-xs">Facebook</span>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

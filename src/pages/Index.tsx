@@ -22,6 +22,18 @@ const Index = () => {
             Minimal. Privacy-first. No app required for recipients.
           </p>
         </div>
+
+        <footer className="mt-12 text-center text-sm text-muted-foreground">
+          Built with ❤ by{" "}
+          <a
+            href="https://ko-fi.com/sirri"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground hover:underline"
+          >
+            Sirri
+          </a>
+        </footer>
       </div>
     </div>
   );
