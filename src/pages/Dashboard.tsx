@@ -4,9 +4,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Share2, Download, Edit, Settings, Eye } from "lucide-react";
+import { Share2, Download, Edit, Settings, Eye, ScanLine } from "lucide-react";
 import { toast } from "sonner";
 import QRModal from "@/components/QRModal";
+import QRScanner from "@/components/QRScanner";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { QRCodeSVG } from "qrcode.react";
@@ -39,6 +40,7 @@ const Dashboard = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -279,6 +281,21 @@ const Dashboard = () => {
           profileUrl={profileUrl}
         />
       )}
+
+      {/* QR Scanner */}
+      <QRScanner
+        open={showQRScanner}
+        onOpenChange={setShowQRScanner}
+      />
+
+      {/* Floating QR Scanner Button */}
+      <button
+        onClick={() => setShowQRScanner(true)}
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
+        aria-label="Scan QR Code"
+      >
+        <ScanLine size={24} />
+      </button>
     </div>
   );
 };
