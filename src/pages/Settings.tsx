@@ -1,13 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, LogOut, Trash2, Download, HelpCircle, ExternalLink, Coffee } from "lucide-react";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ExternalLink, Trash2, LogOut, Download, HelpCircle, Coffee } from "lucide-react";
+import { toast } from "sonner";
+import jsPDF from "jspdf";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +15,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Dialog,
@@ -28,6 +25,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const Settings = () => {
   const { signOut, user } = useAuth();
@@ -36,19 +36,167 @@ const Settings = () => {
   const [helpSubject, setHelpSubject] = useState("");
   const [helpMessage, setHelpMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteOptionsDialog, setShowDeleteOptionsDialog] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
     toast.success("Signed out successfully");
     navigate("/auth");
+    setShowSignOutDialog(false);
+  };
+
+  const exportData = async () => {
+    if (!user) return;
+
+    setIsExporting(true);
+    try {
+      // Fetch all user data
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      const { data: tags } = await supabase
+        .from('tags')
+        .select('*')
+        .eq('profile_id', user.id);
+
+      const { data: socialLinks } = await supabase
+        .from('social_links')
+        .select('*')
+        .eq('profile_id', user.id);
+
+      // Create PDF
+      const pdf = new jsPDF();
+      let yPosition = 20;
+
+      // Title
+      pdf.setFontSize(20);
+      pdf.text("TagCard Profile Data Export", 20, yPosition);
+      yPosition += 15;
+
+      // Profile Information
+      pdf.setFontSize(14);
+      pdf.text("Profile Information", 20, yPosition);
+      yPosition += 10;
+
+      pdf.setFontSize(10);
+      if (profile) {
+        const profileData = [
+          `Name: ${profile.full_name || 'N/A'}`,
+          `Display Name: ${profile.display_name || 'N/A'}`,
+          `Email: ${profile.email || 'N/A'}`,
+          `Phone: ${profile.phone || 'N/A'}`,
+          `Job Title: ${profile.job_title || 'N/A'}`,
+          `Company: ${profile.company || 'N/A'}`,
+          `Location: ${profile.location || 'N/A'}`,
+          `Website: ${profile.website || 'N/A'}`,
+          `Bio: ${profile.short_bio || 'N/A'}`,
+          `Profile Views: ${profile.profile_views || 0}`,
+        ];
+
+        profileData.forEach((line) => {
+          pdf.text(line, 20, yPosition);
+          yPosition += 7;
+        });
+      }
+
+      yPosition += 10;
+
+      // Tags
+      if (tags && tags.length > 0) {
+        pdf.setFontSize(14);
+        pdf.text("Tags", 20, yPosition);
+        yPosition += 10;
+
+        pdf.setFontSize(10);
+        const likes = tags.filter(t => t.tag_type === 'like');
+        const dislikes = tags.filter(t => t.tag_type === 'dislike');
+
+        if (likes.length > 0) {
+          pdf.text("Likes:", 20, yPosition);
+          yPosition += 7;
+          likes.forEach((tag) => {
+            pdf.text(`- ${tag.name}`, 25, yPosition);
+            yPosition += 6;
+          });
+        }
+
+        if (dislikes.length > 0) {
+          yPosition += 5;
+          pdf.text("Dislikes:", 20, yPosition);
+          yPosition += 7;
+          dislikes.forEach((tag) => {
+            pdf.text(`- ${tag.name}`, 25, yPosition);
+            yPosition += 6;
+          });
+        }
+      }
+
+      yPosition += 10;
+
+      // Social Links
+      if (socialLinks && socialLinks.length > 0) {
+        pdf.setFontSize(14);
+        pdf.text("Social Links", 20, yPosition);
+        yPosition += 10;
+
+        pdf.setFontSize(10);
+        socialLinks.forEach((link) => {
+          pdf.text(`${link.platform}: ${link.url}`, 20, yPosition);
+          yPosition += 7;
+        });
+      }
+
+      // Download PDF
+      pdf.save(`TagCard_Data_${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success("Data exported successfully!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export data");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleDeleteAccount = async () => {
-    toast.error("Account deletion is not yet implemented");
-  };
+    if (!user) return;
 
-  const handleExportData = () => {
-    toast.info("Data export coming soon!");
+    try {
+      // Delete user's tags
+      await supabase.from('tags').delete().eq('profile_id', user.id);
+
+      // Delete user's social links
+      await supabase.from('social_links').delete().eq('profile_id', user.id);
+
+      // Delete user's QR codes
+      await supabase.from('qr_codes').delete().eq('profile_id', user.id);
+
+      // Delete user's profile views
+      await supabase.from('profile_views').delete().eq('profile_id', user.id);
+
+      // Delete user's profile
+      await supabase.from('profiles').delete().eq('id', user.id);
+
+      // Delete user's avatar from storage if exists
+      await supabase.storage.from('avatars').remove([`${user.id}/`]);
+
+      // Sign out the user
+      await signOut();
+      
+      toast.success("Account deleted successfully");
+      navigate("/");
+    } catch (error: any) {
+      console.error("Delete account error:", error);
+      toast.error("Failed to delete account. Some data may remain. Please contact support.");
+    } finally {
+      setShowDeleteDialog(false);
+      setShowDeleteOptionsDialog(false);
+    }
   };
 
   const handleSendHelp = async () => {
@@ -118,16 +266,18 @@ const Settings = () => {
             <p className="text-sm text-muted-foreground">Update your profile information</p>
           </button>
 
-          <button
-            onClick={handleExportData}
-            className="w-full p-4 border rounded-xl text-left hover:bg-muted transition-colors flex items-center justify-between"
+          <Button
+            variant="outline"
+            className="w-full justify-start gap-2 h-auto p-4"
+            onClick={exportData}
+            disabled={isExporting}
           >
-            <div>
-              <p className="font-medium">Export Data</p>
+            <Download size={18} />
+            <div className="text-left">
+              <p className="font-medium">{isExporting ? "Exporting..." : "Export Data"}</p>
               <p className="text-sm text-muted-foreground">Download your profile data</p>
             </div>
-            <Download size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Privacy & Security */}
@@ -219,9 +369,9 @@ const Settings = () => {
             <Coffee size={20} />
           </a>
 
-          <button className="w-full p-4 border rounded-xl text-left hover:bg-muted transition-colors">
+          <button onClick={() => navigate("/about")} className="w-full p-4 border rounded-xl text-left hover:bg-muted transition-colors">
             <p className="font-medium">About TagCard</p>
-            <p className="text-sm text-muted-foreground">Version 1.0.0</p>
+            <p className="text-sm text-muted-foreground">Learn about the story behind TagCard</p>
           </button>
         </div>
 
@@ -230,7 +380,7 @@ const Settings = () => {
           <h2 className="font-bold text-lg text-destructive">Danger Zone</h2>
           
           <Button
-            onClick={handleSignOut}
+            onClick={() => setShowSignOutDialog(true)}
             variant="outline"
             className="w-full justify-start h-auto p-4 border-foreground hover:bg-foreground hover:text-background"
           >
@@ -243,39 +393,95 @@ const Settings = () => {
             </div>
           </Button>
 
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start h-auto p-4 border-destructive text-destructive hover:bg-destructive hover:text-background"
-              >
-                <div className="flex items-center gap-3">
-                  <Trash2 size={20} />
-                  <div className="text-left">
-                    <p className="font-medium">Delete Account</p>
-                    <p className="text-sm opacity-70">Permanently delete your account</p>
-                  </div>
-                </div>
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete your account and remove
-                  all your data from our servers.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive">
-                  Delete Account
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button
+            variant="outline"
+            className="w-full justify-start h-auto p-4 border-destructive text-destructive hover:bg-destructive hover:text-background"
+            onClick={() => setShowDeleteOptionsDialog(true)}
+          >
+            <div className="flex items-center gap-3">
+              <Trash2 size={20} />
+              <div className="text-left">
+                <p className="font-medium">Delete Account</p>
+                <p className="text-sm opacity-70">Permanently delete your account</p>
+              </div>
+            </div>
+          </Button>
         </div>
       </div>
+
+      {/* Sign Out Dialog */}
+      <AlertDialog open={showSignOutDialog} onOpenChange={setShowSignOutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sign Out</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to sign out?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSignOut}>Sign Out</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Account Options Dialog */}
+      <AlertDialog open={showDeleteOptionsDialog} onOpenChange={setShowDeleteOptionsDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Before you go...</AlertDialogTitle>
+            <AlertDialogDescription>
+              Would you like to export your data before deleting your account?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                await exportData();
+                setShowDeleteOptionsDialog(false);
+              }}
+              disabled={isExporting}
+            >
+              <Download size={16} className="mr-2" />
+              Export Data
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setShowDeleteOptionsDialog(false);
+                setShowDeleteDialog(true);
+              }}
+            >
+              <Trash2 size={16} className="mr-2" />
+              Delete Account
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm Delete Account Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you absolutely sure? This action cannot be undone. This will permanently
+              delete your account and remove all your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import EditProfile from "./pages/EditProfile";
 import Settings from "./pages/Settings";
 import PublicProfile from "./pages/PublicProfile";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/about" element={<About />} />
           <Route path="/p/:publicId" element={<PublicProfile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

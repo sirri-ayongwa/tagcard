@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, X, Loader2, Plus } from "lucide-react";
+import { ArrowLeft, Camera, X, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const EditProfile = () => {
@@ -125,6 +125,32 @@ const EditProfile = () => {
       toast.success("Avatar updated!");
     } catch (error: any) {
       toast.error("Failed to upload avatar");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    if (!user) return;
+
+    setSaving(true);
+    try {
+      // Remove the avatar from storage if it exists
+      if (avatarUrl) {
+        const filePath = `${user.id}/avatar.${avatarUrl.split('.').pop()}`;
+        await supabase.storage.from('avatars').remove([filePath]);
+      }
+
+      // Update profile to remove avatar_url
+      await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('id', user.id);
+
+      setAvatarUrl("");
+      toast.success("Avatar deleted!");
+    } catch (error: any) {
+      toast.error("Failed to delete avatar");
     } finally {
       setSaving(false);
     }
@@ -253,9 +279,9 @@ const EditProfile = () => {
         {/* Avatar */}
         <div className="flex flex-col items-center space-y-4">
           <div className="relative">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={avatarUrl} />
-              <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
+            <Avatar className="h-32 w-32">
+              <AvatarImage src={avatarUrl} className="object-cover" />
+              <AvatarFallback className="text-3xl">{initials}</AvatarFallback>
             </Avatar>
             <label
               htmlFor="avatar-upload"
@@ -270,6 +296,15 @@ const EditProfile = () => {
                 onChange={handleAvatarUpload}
               />
             </label>
+            {avatarUrl && (
+              <button
+                onClick={handleDeleteAvatar}
+                className="absolute top-0 left-0 p-2 bg-destructive text-destructive-foreground rounded-full cursor-pointer hover:opacity-90 transition-opacity"
+                disabled={saving}
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
           </div>
         </div>
 

@@ -18,6 +18,11 @@ const Index = () => {
           <Button onClick={() => navigate("/auth")} className="btn-primary">
             Get Started
           </Button>
+          <div className="flex gap-2 justify-center">
+            <Button variant="outline" onClick={() => navigate("/about")}>
+              About TagCard
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground">
             Minimal. Privacy-first. No app required for recipients.
           </p>

@@ -27,6 +27,15 @@ const QRScanner = ({ open, onOpenChange }: QRScannerProps) => {
 
   const startScanner = async () => {
     try {
+      // Request camera permission first
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "environment" } 
+      });
+      
+      // Stop the stream immediately after getting permission
+      stream.getTracks().forEach(track => track.stop());
+
+      // Now start the scanner
       const scanner = new Html5Qrcode("qr-reader");
       scannerRef.current = scanner;
 
@@ -41,9 +50,17 @@ const QRScanner = ({ open, onOpenChange }: QRScannerProps) => {
       );
 
       setIsScanning(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to start scanner:", error);
-      toast.error("Failed to access camera. Please check permissions.");
+      
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        toast.error("Camera access denied. Please allow camera permissions in your browser settings.");
+      } else if (error.name === 'NotFoundError') {
+        toast.error("No camera found on this device.");
+      } else {
+        toast.error("Failed to access camera. Please check permissions and try again.");
+      }
+      
       onOpenChange(false);
     }
   };
