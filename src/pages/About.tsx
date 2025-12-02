@@ -1,6 +1,5 @@
-import { ArrowLeft, Heart, Coffee } from "lucide-react";
+import { ArrowLeft, Coffee } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 
 const About = () => {
   const navigate = useNavigate();
@@ -10,7 +9,7 @@ const About = () => {
       {/* Header */}
       <div className="border-b sticky top-0 bg-background z-10">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => navigate("/")} className="icon-btn">
+          <button onClick={() => navigate(-1)} className="icon-btn">
             <ArrowLeft size={20} />
           </button>
           <h1 className="text-xl font-bold">About TagCard</h1>
@@ -119,13 +118,6 @@ const About = () => {
             </div>
           </div>
 
-          {/* Back Button */}
-          <div className="flex justify-center pt-8">
-            <Button onClick={() => navigate("/")} variant="outline" className="gap-2">
-              <ArrowLeft size={18} />
-              Back to Home
-            </Button>
-          </div>
         </div>
       </div>
     </div>
