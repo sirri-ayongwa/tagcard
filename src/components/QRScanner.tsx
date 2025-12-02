@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { X } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -113,15 +112,7 @@ const QRScanner = ({ open, onOpenChange }: QRScannerProps) => {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            Scan TagCard QR Code
-            <button
-              onClick={handleClose}
-              className="rounded-full p-1 hover:bg-accent transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </DialogTitle>
+          <DialogTitle>Scan TagCard QR Code</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
