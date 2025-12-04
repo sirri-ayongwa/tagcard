@@ -20,8 +20,8 @@ const Onboarding = () => {
   const navigate = useNavigate();
 
   const suggestedTags = [
-    "Design", "UI/UX", "Mobile", "React", "JavaScript", "Coffee",
-    "Travel", "Photography", "Music", "Fitness", "Reading", "Gaming"
+    "Cat lover", "Coffee addict", "Beach bum", "Night owl", "Foodie",
+    "Dog person", "Bookworm", "Movie buff", "Plant parent", "Gym rat", "Music junkie", "Adventure seeker"
   ];
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,7 +171,7 @@ const Onboarding = () => {
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-2xl font-bold mb-2">Add your interests</h2>
-              <p className="text-muted-foreground">Choose up to 10 tags that describe you</p>
+              <p className="text-muted-foreground">Add up to 10 things that describe you</p>
             </div>
 
             <div className="space-y-4">
@@ -180,7 +180,7 @@ const Onboarding = () => {
                   type="text"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Add a custom tag"
+                  placeholder="max. 10 interests"
                   onKeyPress={(e) => e.key === 'Enter' && addTag(newTag)}
                 />
                 <Button

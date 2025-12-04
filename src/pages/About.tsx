@@ -39,7 +39,7 @@ const About = () => {
             </p>
 
             <p>
-              That idea stuck. So I built <strong>TagCard!</strong> 🎉
+              That idea stuck. So I built <strong>TagCard!</strong> 🎉 Yeah the name is a work in progress....lol
             </p>
 
             <p>
