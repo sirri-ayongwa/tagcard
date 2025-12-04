@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Pure black & white minimal design system for TagCard */
+    /* Pure black & white minimal design system for TagCard - Light Mode */
     --background: 0 0% 100%;
     --foreground: 0 0% 0%;
 
@@ -48,6 +48,43 @@ All colors MUST be HSL.
     /* Transitions */
     --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  .dark {
+    /* Dark Mode */
+    --background: 0 0% 5%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Primary = White in dark mode */
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 5%;
+
+    /* Secondary */
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    /* Muted */
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+
+    /* Accent */
+    --accent: 0 0% 98%;
+    --accent-foreground: 0 0% 5%;
+
+    /* Destructive */
+    --destructive: 0 0% 98%;
+    --destructive-foreground: 0 0% 5%;
+
+    /* Borders */
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 98%;
+  }
 }
 
 @layer base {
@@ -57,6 +94,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   /* Custom scrollbar */
@@ -96,5 +134,22 @@ All colors MUST be HSL.
   /* Secondary action button */
   .btn-secondary {
     @apply w-full h-12 bg-background text-foreground border-2 border-foreground rounded-xl font-medium hover:bg-foreground hover:text-background transition-all active:scale-[0.98];
+  }
+
+  /* Fade in animation */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
