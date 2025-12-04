@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, Trash2, LogOut, Download, HelpCircle, Coffee } from "lucide-react";
+import { ArrowLeft, ExternalLink, Trash2, LogOut, Download, HelpCircle, Coffee, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import {
@@ -31,6 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 const Settings = () => {
   const { signOut, user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [helpOpen, setHelpOpen] = useState(false);
   const [helpSubject, setHelpSubject] = useState("");
@@ -264,6 +266,19 @@ const Settings = () => {
           >
             <p className="font-medium">Edit Profile</p>
             <p className="text-sm text-muted-foreground">Update your profile information</p>
+          </button>
+
+          <button
+            onClick={toggleTheme}
+            className="w-full p-4 border rounded-xl text-left hover:bg-muted transition-colors flex items-center justify-between"
+          >
+            <div>
+              <p className="font-medium">Appearance</p>
+              <p className="text-sm text-muted-foreground">
+                {theme === "light" ? "Light mode" : "Dark mode"}
+              </p>
+            </div>
+            {theme === "light" ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
           <Button
