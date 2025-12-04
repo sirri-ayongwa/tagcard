@@ -371,7 +371,7 @@ const Settings = () => {
 
           <button onClick={() => navigate("/about")} className="w-full p-4 border rounded-xl text-left hover:bg-muted transition-colors">
             <p className="font-medium">About TagCard</p>
-            <p className="text-sm text-muted-foreground">Learn about the story behind TagCard</p>
+            <p className="text-sm text-muted-foreground">Version 1.0</p>
           </button>
         </div>
 
