@@ -104,7 +104,7 @@ const About = () => {
               <p className="font-medium text-lg">
                 <strong>Why I care:</strong> I got tired of seeing good conversations never get started because people 
                 were stuck in the small-talk loop 🥱. TagCard is my attempt to let people skip the checklist and get to 
-                the interesting stuff that actually matters.
+                the interesting stuff that actually matters. 
               </p>
             </div>
 
