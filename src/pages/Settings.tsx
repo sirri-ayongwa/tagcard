@@ -295,15 +295,6 @@ const Settings = () => {
           </Button>
         </div>
 
-        {/* Privacy & Security */}
-        <div className="space-y-4">
-          <h2 className="font-bold text-lg">Privacy & Security</h2>
-          
-          <div className="p-4 border rounded-xl">
-            <p className="font-medium">Privacy Settings</p>
-            <p className="text-sm text-muted-foreground">Configure in Edit Profile</p>
-          </div>
-        </div>
 
         {/* Support */}
         <div className="space-y-4">
