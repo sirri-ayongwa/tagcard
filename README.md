@@ -64,6 +64,18 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/cda7ab9f-0ebc-4b0f-a3d0-7bc5adafe20f) and click on Share -> Publish.
 
+## Vercel Deployment Note
+
+This project uses React Router with `BrowserRouter` for clean URLs. When deploying to Vercel (or similar hosts), you need the `vercel.json` file included in this repo to handle SPA routing:
+
+```json
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+}
+```
+
+Without this, direct links to routes like `/p/abc123` will return a 404 because Vercel looks for actual files instead of letting React Router handle the route.
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!
