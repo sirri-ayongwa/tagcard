@@ -12,9 +12,9 @@ import { ArrowLeft, Camera, X, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const EditProfile = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Profile fields
@@ -42,12 +42,15 @@ const EditProfile = () => {
   const [socialLinks, setSocialLinks] = useState<Array<{ id: string; platform: string; url: string }>>([]);
 
   useEffect(() => {
+    // Wait for auth to finish loading before checking user
+    if (authLoading) return;
+    
     if (!user) {
       navigate("/auth");
       return;
     }
     loadProfile();
-  }, [user]);
+  }, [user, authLoading]);
 
   const loadProfile = async () => {
     if (!user) return;
@@ -248,7 +251,7 @@ const EditProfile = () => {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>

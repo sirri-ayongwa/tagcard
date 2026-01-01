@@ -34,7 +34,7 @@ interface Tag {
 }
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -43,13 +43,16 @@ const Dashboard = () => {
   const [showQRScanner, setShowQRScanner] = useState(false);
 
   useEffect(() => {
+    // Wait for auth to finish loading before checking user
+    if (authLoading) return;
+    
     if (!user) {
       navigate("/auth");
       return;
     }
 
     loadProfile();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const loadProfile = async () => {
     if (!user) return;
@@ -121,7 +124,7 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
