@@ -1,85 +1,48 @@
-# Welcome to your Lovable project
+# TagCard 🏷️
 
-## Project info
+**Skip the small talk. Share who you really are.**
 
-**URL**: https://lovable.dev/projects/cda7ab9f-0ebc-4b0f-a3d0-7bc5adafe20f
+TagCard is a minimal, privacy-first digital profile card app. It was born from a simple idea: dating (and meeting new people in general) shouldn't start with the same repetitive questions every time. With TagCard, you create a profile with your bio, likes, dislikes, and social links — then share it instantly via a scannable QR code or a downloadable business card PDF.
 
-## How can I edit this code?
+No swiping. No awkward icebreakers. Just your story, your tags, and a real conversation starter.
 
-There are several ways of editing your application.
+## ✨ Features
 
-**Use Lovable**
+- 📇 Create a digital profile card with bio, contact info, likes & dislikes
+- 📱 Share via QR code or downloadable business card PDF
+- 🔗 Public profile link for easy sharing
+- 🏷️ Tag system for likes and dislikes — skip the small talk
+- 📊 Profile view analytics
+- 🌙 Dark mode support
+- 📱 Fully responsive & mobile-first design
+- 🔒 Privacy-first — you control what's visible
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/cda7ab9f-0ebc-4b0f-a3d0-7bc5adafe20f) and start prompting.
+## 🛠️ Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend:** React, TypeScript, Vite
+- **Styling:** Tailwind CSS, shadcn/ui
+- **Backend:** Lovable Cloud (Supabase)
+- **Auth:** Email-based authentication
+- **QR Generation:** qrcode.react
+- **PDF Export:** jsPDF + html2canvas
 
-**Use your preferred IDE**
+## 🤖 Vibe Coded with Lovable
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+This entire app was vibe coded using [Lovable](https://lovable.dev) — the AI-powered full-stack app builder. From idea to production, built through conversation.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## ⭐ Like it? Star this repo!
 
-Follow these steps:
+If TagCard helped you skip some small talk (or you just think it's cool), please give this repo a ⭐ — it means a lot and helps others discover the project!
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🔗 Live App
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Check it out: [tagcard.lovable.app](https://tagcard.lovable.app)
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 👤 Built by
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+**Sirri Ayongwa** — Founder & Developer  
+☕ [Buy me a coffee](https://ko-fi.com/sirri) | 💡 [Suggest a feature](https://tagcard.canny.io/)
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/cda7ab9f-0ebc-4b0f-a3d0-7bc5adafe20f) and click on Share -> Publish.
-
-## Vercel Deployment Note
-
-This project uses React Router with `BrowserRouter` for clean URLs. When deploying to Vercel (or similar hosts), you need the `vercel.json` file included in this repo to handle SPA routing:
-
-```json
-{
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
-}
-```
-
-Without this, direct links to routes like `/p/abc123` will return a 404 because Vercel looks for actual files instead of letting React Router handle the route.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Made with ❤️ and zero small talk.
