@@ -28,7 +28,7 @@ This entire app was vibe coded using [Lovable](https://lovable.dev) — the AI-p
 If TagCard helped you skip some small talk (or you just think it's cool), please give this repo a ⭐. It means a lot and helps others discover the project!
 
 ## 🔗 Live App
-Check it out: [tagcard.lovable.app](https://tagcard.lovable.app)
+Check it out: [tagcard.vercel.app](https://tagcard.vercel.app/)
 
 ## 👤 Built by
 **Sirri Ayongwa** 
